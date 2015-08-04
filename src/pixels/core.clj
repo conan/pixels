@@ -56,6 +56,7 @@
 
 
 (defn neighbours
+  "Given a pixmap and pixel coordinates, returns a set of all 4-way neighbours of the pixel"
   [pixmap pixel]
   (let [x (first pixel)
         y (second pixel)]
@@ -74,6 +75,7 @@
   (let [x        (dec Y)
         y        (dec X)
         original (get-in pixmap [x y])]
+    ;; Paint the next pixel from the queue (a set), adding its homochromatic neighbours to the queue as we go
     (loop [visited   #{}
            unvisited #{[x y]}
            result    pixmap]
@@ -81,8 +83,8 @@
         (let [pixel      (first unvisited)
               neighbours (->> pixel
                               (neighbours pixmap)
-                              (filter #(= original (get-in pixmap %)))
-                              (filter (complement visited)))
+                              (filter #(= original (get-in pixmap %))) ;; remove different colours
+                              (filter (complement visited))) ;; remove already visited
               visited    (conj visited pixel)
               unvisited  (apply conj (disj unvisited pixel) neighbours)
               result     (assoc-in result pixel C)]
