@@ -22,76 +22,72 @@
 (defn L
   "Colours the pixel (X,Y) with colour C."
   [pixmap X Y C]
-  (let [X (dec X)
-        Y (dec Y)]
-    (assoc-in pixmap [X Y] C)))
+  (let [x (dec Y)
+        y (dec X)]
+    (assoc-in pixmap [x y] C)))
 
 
 (defn V
   "Draw a vertical segment of colour C in column X between rows Y1 and Y2 (inclusive)."
   [pixmap X Y1 Y2 C]
-  (let [X         (dec X)
-        Y1        (dec Y1)
-        Y2        (dec Y2)
-        to-update (set (range Y1 (inc Y2))) ;; end of range is exclusive, we want inclusive
-        update-fn (fn [i row]
+  (let [y         (dec X)
+        x1        (dec Y1)
+        x2        (dec Y2)
+        to-update (set (range x1 (inc x2))) ;; end of range is exclusive, we want inclusive
+        paint-fn  (fn [i row]
                     (if (to-update i)
-                      (assoc-in row [X] C)
+                      (assoc-in row [y] C)
                       row))]
-    (vec (map-indexed update-fn pixmap))))
+    (vec (map-indexed paint-fn pixmap))))
 
 
 (defn H
   "Draw a horizontal segment of colour C in row Y between columns X1 and X (inclusive)."
   [pixmap X1 X2 Y C]
-  (let [X1        (dec X1)
-        X2        (dec X2)
-        Y         (dec Y)
-        length    (count (range X1 (inc X2)))
-        update-fn (fn [i row]
-                    (if (= i Y)
-                      (vec (concat (take X1 row) (repeat length C) (drop (inc X2) row)))
-                      row))]
-    (vec (map-indexed update-fn pixmap))))
+  (let [y1       (dec X1)
+        y2       (dec X2)
+        x        (dec Y)
+        length   (count (range y1 (inc y2)))
+        paint-fn (fn [i row]
+                   (if (= i x)
+                     (vec (concat (take y1 row) (repeat length C) (drop (inc y2) row)))
+                     row))]
+    (vec (map-indexed paint-fn pixmap))))
 
 
-(defn count-duplicates
-  "Counts how many times the first value in a seq appears consecutively after the first.
-  e.g. (count-duplicates [4 4 4 3 1 4]) => 2
-  because the number 4 appears twice after the initial 4 at the head of the seq"
-  [s]
-  (->> s
-       (partition-by #(= (first s) %))
-       first
-       count
-       dec))
-
-
-(defn row-fills
-  "Given a row and an index i, returns a seq of all the indices of contiguous elements in the row connected to the
-  element at i by the same colour.
-  e.g. (row-fills [3 1 3 3 3] 2) => (2 3 4)
-  because the elements at positions 2, 3 and 4 in the row are the same colour as position 2 and are contiguous"
-  [row i]
-  (let [colour       (get row i)
-        start-offset (count-duplicates (->> row (take (inc i)) reverse))
-        start        (- i start-offset)
-        end-offset   (count-duplicates (drop i row))
-        end          (+ i end-offset)]
-    (range start (inc end))))
+(defn neighbours
+  [pixmap pixel]
+  (let [x (first pixel)
+        y (second pixel)]
+    (->> [(when (<= x (count (first pixmap))) [(inc x) y])
+          (when (<= y (count pixmap)) [x (inc y)])
+          (when (> x 0) [(dec x) y])
+          (when (> y 0) [x (dec y)])]
+         (remove nil?)
+         set)))
 
 
 (defn F
-  "Fill the region R with the colour C. R is defined as: Pixel (X,Y) belongs to R. Any other pixel which is the same
-  colour as (X,Y) and shares a common side with any pixel in R also belongs to this region."
+  "Fill the region R with the colour C. R is defined as: Pixel (X,Y) belongs to R. Any other pixel which is
+  the same colour as (X,Y) and shares a common side with any pixel in R also belongs to this region."
   [pixmap X Y C]
-  (let [X         (dec X)
-        Y         (dec Y)
-        XY        (get-in pixmap [X Y])
-        rows-up   (reverse (range 0 Y))
-        rows-down (range (inc Y) (count pixmap))]))
-
-
+  (let [x        (dec Y)
+        y        (dec X)
+        original (get-in pixmap [x y])]
+    (loop [visited   #{}
+           unvisited #{[x y]}
+           result    pixmap]
+      (if (seq unvisited)
+        (let [pixel      (first unvisited)
+              neighbours (->> pixel
+                              (neighbours pixmap)
+                              (filter #(= original (get-in pixmap %)))
+                              (filter (complement visited)))
+              visited    (conj visited pixel)
+              unvisited  (apply conj (disj unvisited pixel) neighbours)
+              result     (assoc-in result pixel C)]
+          (recur visited unvisited result))
+        result))))
 
 
 (defn S
