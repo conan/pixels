@@ -2,6 +2,13 @@
 
 A Clojure library designed to simulate operations on pixmaps
 
+## Prerequisites
+
+The following are required to run this tool:
+
+* [Java SE Development Kit 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [Leiningen 2.5.1](http://leiningen.org/)
+
 ## Usage
 
     (require '[pixels.core])
