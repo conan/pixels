@@ -1,6 +1,7 @@
 # pixels
 
-A Clojure library designed to simulate operations on pixmaps
+A Clojure library designed to simulate operations on pixmaps.  Note that the pixmaps are represented by vectors
+of vectors, which means in the code the coordinates are reversed to allow use of things like `get-in`.
 
 ## Prerequisites
 
