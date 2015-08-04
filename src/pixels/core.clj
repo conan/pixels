@@ -4,11 +4,12 @@
 (defn I
   "Create a new M x N image with all pixels coloured white (O)."
   [M N]
-  (->> "O"
-       (repeat M)
-       vec
-       (repeat N)
-       vec))
+  (when (and (>= M 1) (<= N 250))
+    (->> "O"
+         (repeat M)
+         vec
+         (repeat N)
+         vec)))
 
 
 (defn C

@@ -9,8 +9,16 @@
                 ["O" "O" "O"]])
 
 
-(fact "I creates new 3x4 image"
-  (I 3 4) => blank-3x4)
+(facts "I"
+
+  (fact "creates new 3x4 image"
+    (I 3 4) => blank-3x4)
+
+  (fact "M cannot be less than 1"
+    (I 0 10) => nil)
+
+  (fact "N cannot be greater than 250"
+    (I 10 251) => nil))
 
 
 (fact "C clears 3x4 image"
