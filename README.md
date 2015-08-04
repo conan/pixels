@@ -42,6 +42,12 @@ Flood fill a region:
                         
     (F question-mark 2 3 "I")
     => [["I" "I" "I"] ["I" "O" "I"] ["O" "I" "I"] ["O" "I" "O"]]
+    
+## Running tests
+
+Tests are written using [Midje](https://github.com/marick/Midje)
+
+    lein midje
 
 ## License
 
